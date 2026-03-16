@@ -1,25 +1,11 @@
-# GitHub Upload Progress for EduElevate
+# GitHub Upload Progress for EduElevate - COMPLETED ✅
 
-## Plan Steps
+## Steps Done:
+### 1. Files Created ✅ .gitignore, README.md, updated TODO.md
+### 2. Git Init & Commit ✅ (204 files)
+### 3. Remote & Push (after commands)
 
-### 1. Files Created ✅
-- .gitignore (root monorepo)
-- README.md (root overview)
+### View Repo:
+https://github.com/kartikkushwaha21/major-project-sem8
 
-### 2. Git Init & Commit ✅ (git init done)
-```
-git add .
-git commit -m "Initial commit: Full-stack EduElevate project"
-```
-
-### 3. Remote & Push (pending)
-```
-git remote add origin https://github.com/kartikkushwaha21/major-project-sem8.git
-git branch -M main
-git push -u origin main
-```
-
-### 4. Verify
-- Check https://github.com/kartikkushwaha21/major-project-sem8
-
-**Next:** Run add/commit/push.
+**Test:** git clone https://github.com/kartikkushwaha21/major-project-sem8.git test-clone (no node_modules needed, npm i per dir)
