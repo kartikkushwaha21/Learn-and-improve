@@ -1,13 +1,13 @@
-import { useDispatch, useSelector } from "react-redux"
-import { Table, Tbody, Td, Th, Thead, Tr } from "react-super-responsive-table"
-
-import { setCourse, setEditCourse } from "../../../../slices/courseSlice"
-import "react-super-responsive-table/dist/SuperResponsiveTableStyle.css"
 import { useState } from "react"
 import { FaCheck } from "react-icons/fa"
-import { FiEdit2 } from "react-icons/fi"
-import { HiClock } from "react-icons/hi"
+import {
+  FiBookOpen,
+  FiCalendar,
+  FiEdit2,
+  FiUsers,
+} from "react-icons/fi"
 import { RiDeleteBin6Line } from "react-icons/ri"
+import { useSelector } from "react-redux"
 import { useNavigate } from "react-router-dom"
 
 import { formatDate } from "../../../../services/formatDate"
@@ -18,13 +18,29 @@ import {
 import { COURSE_STATUS } from "../../../../utils/constants"
 import ConfirmationModal from "../../../Common/ConfirmationModal"
 
+const DESCRIPTION_WORD_LIMIT = 28
+
+const formatPrice = (value) =>
+  new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 0,
+  }).format(value || 0)
+
+const truncateDescription = (value = "") => {
+  const words = value.split(" ")
+  if (words.length <= DESCRIPTION_WORD_LIMIT) {
+    return value
+  }
+
+  return `${words.slice(0, DESCRIPTION_WORD_LIMIT).join(" ")}...`
+}
+
 export default function CoursesTable({ courses, setCourses }) {
-  const dispatch = useDispatch()
   const navigate = useNavigate()
   const { token } = useSelector((state) => state.auth)
   const [loading, setLoading] = useState(false)
   const [confirmationModal, setConfirmationModal] = useState(null)
-  const TRUNCATE_LENGTH = 30
 
   const handleCourseDelete = async (courseId) => {
     setLoading(true)
@@ -37,123 +53,178 @@ export default function CoursesTable({ courses, setCourses }) {
     setLoading(false)
   }
 
-  // console.log("All Course ", courses)
+  if (!courses?.length) {
+    return (
+      <>
+        <section className="rounded-[28px] border border-dashed border-slate-300 bg-slate-50 px-6 py-16 text-center shadow-[0_18px_60px_rgba(15,23,42,0.05)]">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-white text-indigo-600 shadow-sm">
+            <FiBookOpen className="text-[28px]" />
+          </div>
+          <h2 className="mt-6 text-2xl font-semibold tracking-tight text-slate-950">
+            You have not created any courses yet
+          </h2>
+          <p className="mx-auto mt-3 max-w-xl text-sm leading-7 text-slate-600">
+            Start building your course catalog. Your first draft will appear
+            here with the same edit and delete controls once it is created.
+          </p>
+          <button
+            onClick={() => navigate("/dashboard/add-course")}
+            className="mt-8 inline-flex items-center gap-2 rounded-full bg-indigo-600 px-6 py-3 text-sm font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-indigo-500"
+          >
+            <FiBookOpen className="text-base" />
+            <span>Create a course</span>
+          </button>
+        </section>
+        {confirmationModal && <ConfirmationModal modalData={confirmationModal} />}
+      </>
+    )
+  }
 
   return (
     <>
-      <Table className="rounded-xl border border-richblack-800 ">
-        <Thead>
-          <Tr className="flex gap-x-10 rounded-t-md border-b border-b-richblack-800 px-6 py-2">
-            <Th className="flex-1 text-left text-sm font-medium uppercase text-black">
-              Courses
-            </Th>
-            <Th className="text-left text-sm font-medium uppercase text-black">
-              Duration
-            </Th>
-            <Th className="text-left text-sm font-medium uppercase text-black">
-              Price
-            </Th>
-            <Th className="text-left text-sm font-medium uppercase text-black">
-              Actions
-            </Th>
-          </Tr>
-        </Thead>
-        <Tbody>
-          {courses?.length === 0 ? (
-            <Tr>
-              <Td className="py-10 text-center text-2xl font-medium text-black">
-                No courses found
-                {/* TODO: Need to change this state */}
-              </Td>
-            </Tr>
-          ) : (
-            courses?.map((course) => (
-              <Tr
+      <section className="space-y-8">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+          <div className="space-y-2">
+            <p className="text-xs font-bold uppercase tracking-[0.24em] text-slate-500">
+              Course Library
+            </p>
+            <h2 className="text-3xl font-semibold tracking-[-0.03em] text-slate-950">
+              Review and curate your latest course lineup
+            </h2>
+            <p className="max-w-2xl text-sm leading-7 text-slate-600">
+              Each card keeps the same management actions from the previous
+              table, now in a more visual dashboard layout.
+            </p>
+          </div>
+
+          <div className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600 shadow-sm">
+            {courses.length} course{courses.length > 1 ? "s" : ""}
+          </div>
+        </div>
+
+        <div className="grid gap-8 md:grid-cols-2 2xl:grid-cols-3">
+          {courses.map((course) => {
+            const isDraft = course.status === COURSE_STATUS.DRAFT
+
+            return (
+              <article
                 key={course._id}
-                className="flex gap-x-10 border-b border-richblack-800 px-6 py-8"
+                className="group overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-[0_20px_60px_rgba(15,23,42,0.07)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_24px_70px_rgba(15,23,42,0.12)]"
               >
-                <Td className="flex flex-1 gap-x-4">
+                <div className="relative aspect-video overflow-hidden bg-slate-100">
                   <img
                     src={course?.thumbnail}
                     alt={course?.courseName}
-                    className="h-[148px] w-[220px] rounded-lg object-cover"
+                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
-                  <div className="flex flex-col justify-between">
-                    <p className="text-lg font-semibold text-black">
-                      {course.courseName}
-                    </p>
-                    <p className="text-xs text-richblack-300">
-                      {course.courseDescription.split(" ").length >
-                      TRUNCATE_LENGTH
-                        ? course.courseDescription
-                            .split(" ")
-                            .slice(0, TRUNCATE_LENGTH)
-                            .join(" ") + "..."
-                        : course.courseDescription}
-                    </p>
-                    <p className="text-[12px] text-black">
-                      Created: {formatDate(course.createdAt)}
-                    </p>
-                    {course.status === COURSE_STATUS.DRAFT ? (
-                      <p className="flex w-fit flex-row items-center gap-2 rounded-full bg-richblack-700 px-2 py-[2px] text-[12px] font-medium text-pink-100">
-                        <HiClock size={14} />
-                        Drafted
-                      </p>
-                    ) : (
-                      <p className="flex w-fit flex-row items-center gap-2 rounded-full bg-richblack-700 px-2 py-[2px] text-[12px] font-medium text-caribbeangreen-50">
-                        <div className="flex h-3 w-3 items-center justify-center rounded-full bg-caribbeangreen-50 text-richblack-700">
-                          <FaCheck size={8} />
-                        </div>
-                        Published
-                      </p>
-                    )}
+
+                  <div className="absolute left-4 top-4">
+                    <span
+                      className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] ${
+                        isDraft
+                          ? "bg-amber-100 text-amber-800"
+                          : "bg-emerald-100 text-emerald-800"
+                      }`}
+                    >
+                      {isDraft ? (
+                        <span className="h-2 w-2 rounded-full bg-amber-500" />
+                      ) : (
+                        <span className="flex h-4 w-4 items-center justify-center rounded-full bg-emerald-600 text-[8px] text-white">
+                          <FaCheck />
+                        </span>
+                      )}
+                      {isDraft ? "Drafted" : "Published"}
+                    </span>
                   </div>
-                </Td>
-                <Td className="text-sm font-medium text-black">
-                  2hr 30min
-                </Td>
-                <Td className="text-sm font-medium text-black">
-                  ₹{course.price}
-                </Td>
-                <Td className="text-sm font-medium text-black ">
-                  <button
-                    disabled={loading}
-                    onClick={() => {
-                      navigate(`/dashboard/edit-course/${course._id}`)
-                    }}
-                    title="Edit"
-                    className="px-2 transition-all duration-200 hover:scale-110 hover:text-caribbeangreen-300"
-                  >
-                    <FiEdit2 size={20} />
-                  </button>
-                  <button
-                    disabled={loading}
-                    onClick={() => {
-                      setConfirmationModal({
-                        text1: "Do you want to delete this course?",
-                        text2:
-                          "All the data related to this course will be deleted",
-                        btn1Text: !loading ? "Delete" : "Loading...  ",
-                        btn2Text: "Cancel",
-                        btn1Handler: !loading
-                          ? () => handleCourseDelete(course._id)
-                          : () => {},
-                        btn2Handler: !loading
-                          ? () => setConfirmationModal(null)
-                          : () => {},
-                      })
-                    }}
-                    title="Delete"
-                    className="px-1 transition-all duration-200 hover:scale-110 hover:text-[#ff0000]"
-                  >
-                    <RiDeleteBin6Line size={20} />
-                  </button>
-                </Td>
-              </Tr>
-            ))
-          )}
-        </Tbody>
-      </Table>
+                </div>
+
+                <div className="space-y-6 p-6">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="space-y-2">
+                      <h3 className="text-xl font-semibold tracking-tight text-slate-950">
+                        {course.courseName}
+                      </h3>
+                      <p className="text-sm leading-7 text-slate-600">
+                        {truncateDescription(course.courseDescription)}
+                      </p>
+                    </div>
+
+                    <div className="flex shrink-0 items-center gap-1">
+                      <button
+                        disabled={loading}
+                        onClick={() =>
+                          navigate(`/dashboard/edit-course/${course._id}`)
+                        }
+                        title="Edit"
+                        className="rounded-full p-2 text-slate-500 transition-all duration-200 hover:bg-indigo-50 hover:text-indigo-600"
+                      >
+                        <FiEdit2 size={18} />
+                      </button>
+                      <button
+                        disabled={loading}
+                        onClick={() => {
+                          setConfirmationModal({
+                            text1: "Do you want to delete this course?",
+                            text2:
+                              "All the data related to this course will be deleted",
+                            btn1Text: !loading ? "Delete" : "Loading...  ",
+                            btn2Text: "Cancel",
+                            btn1Handler: !loading
+                              ? () => handleCourseDelete(course._id)
+                              : () => {},
+                            btn2Handler: !loading
+                              ? () => setConfirmationModal(null)
+                              : () => {},
+                          })
+                        }}
+                        title="Delete"
+                        className="rounded-full p-2 text-slate-500 transition-all duration-200 hover:bg-rose-50 hover:text-rose-600"
+                      >
+                        <RiDeleteBin6Line size={18} />
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="rounded-2xl bg-slate-50 p-4">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+                        Price
+                      </p>
+                      <p className="mt-3 text-lg font-semibold text-indigo-600">
+                        {formatPrice(course.price)}
+                      </p>
+                    </div>
+
+                    <div className="rounded-2xl bg-slate-50 p-4">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+                        Modules
+                      </p>
+                      <p className="mt-3 text-lg font-semibold text-slate-950">
+                        {course.courseContent?.length || 0}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-4 border-t border-slate-200 pt-4 text-sm text-slate-500">
+                    <div className="flex items-center gap-2">
+                      <FiUsers className="text-base" />
+                      <span>
+                        {course.studentsEnroled?.length || 0} enrolled
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <FiCalendar className="text-base" />
+                      <span>Created {formatDate(course.createdAt)}</span>
+                    </div>
+                  </div>
+                </div>
+              </article>
+            )
+          })}
+        </div>
+      </section>
+
       {confirmationModal && <ConfirmationModal modalData={confirmationModal} />}
     </>
   )

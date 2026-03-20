@@ -20,7 +20,7 @@ export default function Sidebar() {
 
   if (profileLoading || authLoading) {
     return (
-      <div className="grid h-[calc(100vh-3.5rem)] min-w-[220px] items-center border-r-[1px] border-r-richblack-700 bg-richblack-800">
+      <div className="grid h-[calc(100vh-3.5rem)] min-w-[240px] items-center border-r border-slate-200 bg-slate-50">
         <div className="spinner"></div>
       </div>
     )
@@ -28,8 +28,8 @@ export default function Sidebar() {
 
   return (
     <>
-      <div className="flex h-[calc(100vh-3.5rem)] min-w-[220px] flex-col border-r-[1px] border-r-richblack-700 bg-customYellow py-10">
-        <div className="flex flex-col">
+      <div className="flex h-[calc(100vh-3.5rem)] min-w-[240px] flex-col justify-between border-r border-slate-200 bg-slate-50 px-4 py-8">
+        <div className="flex flex-col gap-2">
           {sidebarLinks.map((link) => {
             if (link.type && user?.accountType !== link.type) return null
             return (
@@ -37,8 +37,8 @@ export default function Sidebar() {
             )
           })}
         </div>
-        <div className="mx-auto mt-6 mb-6 h-[1px] w-10/12 bg-richblack-700" />
-        <div className="flex flex-col">
+
+        <div className="flex flex-col gap-2">
           <SidebarLink
             link={{ name: "Settings", path: "/dashboard/settings" }}
             iconName="VscSettingsGear"
@@ -54,12 +54,10 @@ export default function Sidebar() {
                 btn2Handler: () => setConfirmationModal(null),
               })
             }
-            className="px-8 py-2 text-sm font-medium text-richblack-300"
+            className="flex items-center gap-x-3 rounded-xl px-4 py-3 text-sm font-medium text-slate-500 transition-all duration-200 hover:bg-white hover:text-slate-900"
           >
-            <div className="flex items-center gap-x-2">
-              <VscSignOut className="text-lg" />
-              <span>Logout</span>
-            </div>
+            <VscSignOut className="text-lg" />
+            <span>Logout</span>
           </button>
         </div>
       </div>
