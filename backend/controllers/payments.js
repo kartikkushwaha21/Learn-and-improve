@@ -1,4 +1,8 @@
-const { instance } = require("../config/razorpay")
+const {
+  instance,
+  getRazorpayConfigError,
+  getRazorpayKeyId,
+} = require("../config/razorpay")
 const Course = require("../models/Course")
 const crypto = require("crypto")
 const User = require("../models/User")
@@ -10,8 +14,26 @@ const {
 const { paymentSuccessEmail } = require("../mail/templates/paymentSuccessEmail")
 const CourseProgress = require("../models/CourseProgress")
 
+const ensureRazorpayConfigured = (res) => {
+  const configError = getRazorpayConfigError()
+
+  if (!configError) {
+    return true
+  }
+
+  res.status(500).json({
+    success: false,
+    message: configError,
+  })
+  return false
+}
+
 // Capture the payment and initiate the Razorpay order
 exports.capturePayment = async (req, res) => {
+  if (!ensureRazorpayConfigured(res)) {
+    return
+  }
+
   const { courses } = req.body
   const userId = req.user.id
   if (courses.length === 0) {
@@ -52,7 +74,7 @@ exports.capturePayment = async (req, res) => {
   const options = {
     amount: total_amount * 100,
     currency: "INR",
-    receipt: Math.random(Date.now()).toString(),
+    receipt: `rcpt_${Date.now()}_${Math.random().toString(16).slice(2, 8)}`,
   }
 
   try {
@@ -61,7 +83,10 @@ exports.capturePayment = async (req, res) => {
     console.log(paymentResponse)
     res.json({
       success: true,
-      data: paymentResponse,
+      data: {
+        ...paymentResponse,
+        key: getRazorpayKeyId(),
+      },
     })
   } catch (error) {
     console.log(error)
@@ -92,6 +117,10 @@ exports.capturePayment = async (req, res) => {
 // }
 exports.verifyPayment = async (req, res) => {
   try {
+    if (!ensureRazorpayConfigured(res)) {
+      return
+    }
+
     const {
       razorpay_order_id,
       razorpay_payment_id,

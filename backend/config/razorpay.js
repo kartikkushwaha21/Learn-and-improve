@@ -1,15 +1,27 @@
-const Razorpay = require("razorpay");
+const Razorpay = require("razorpay")
 
-exports.instance = new Razorpay({
-	key_id: process.env.RAZORPAY_KEY,
-	key_secret: process.env.RAZORPAY_SECRET,
-});
+const keyId = process.env.RAZORPAY_KEY
+const keySecret = process.env.RAZORPAY_SECRET
 
-// const REACT_APP_RAZORPAY_KEY = "rzp_test_fUIZAI25WMgGwi"
+const isPlaceholderValue = (value = "") =>
+  !value || value.startsWith("your-razorpay-")
 
-// const RAZORPAY_SECRET = "o7TBIxOogcPsNQa9pTzsAoYf"
+const isConfigured =
+  !isPlaceholderValue(keyId) && !isPlaceholderValue(keySecret)
 
-// exports.instance = new Razorpay({
-// 	key_id: REACT_APP_RAZORPAY_KEY,
-// 	key_secret: RAZORPAY_SECRET,
-// });
+exports.instance = isConfigured
+  ? new Razorpay({
+      key_id: keyId,
+      key_secret: keySecret,
+    })
+  : null
+
+exports.getRazorpayKeyId = () => (isConfigured ? keyId : null)
+
+exports.getRazorpayConfigError = () => {
+  if (isConfigured) {
+    return null
+  }
+
+  return "Razorpay is not configured. Set valid RAZORPAY_KEY and RAZORPAY_SECRET in the backend environment."
+}

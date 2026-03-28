@@ -46,10 +46,14 @@ export async function BuyCourse(token, courses, userDetails, navigate, dispatch)
         }
         console.log("PRINTING orderResponse", orderResponse);
         const paymentData = orderResponse.data.data;
-        console.log("Razorpay Key:", process.env.REACT_APP_RAZORPAY_KEY);
+        const razorpayKey = paymentData.key || process.env.REACT_APP_RAZORPAY_KEY;
+
+        if (!razorpayKey) {
+            throw new Error("Razorpay key is missing. Configure the backend payment key or set REACT_APP_RAZORPAY_KEY.");
+        }
 
 const options = {
-  key: process.env.REACT_APP_RAZORPAY_KEY,
+  key: razorpayKey,
   currency: paymentData.currency,
   amount: `${paymentData.amount}`,
   order_id: paymentData.id,
@@ -77,7 +81,7 @@ const options = {
     }
     catch(error) {
         console.log("PAYMENT API ERROR.....", error);
-        toast.error("Could not make Payment");
+        toast.error(error?.response?.data?.message || error.message || "Could not make Payment");
     }
     toast.dismiss(toastId);
 }
@@ -115,7 +119,7 @@ async function verifyPayment(bodyData, token, navigate, dispatch) {
     }   
     catch(error) {
         console.log("PAYMENT VERIFY ERROR....", error);
-        toast.error("Could not verify Payment");
+        toast.error(error?.response?.data?.message || error.message || "Could not verify Payment");
     }
     toast.dismiss(toastId);
     dispatch(setPaymentLoading(false));
