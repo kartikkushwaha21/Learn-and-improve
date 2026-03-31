@@ -98,7 +98,7 @@ function CourseDetails() {
     courseContent,
     ratingAndReviews,
     instructor,
-    studentsEnrolled,
+    studentsEnroled,
     createdAt,
   } = response.data?.courseDetails
 
@@ -154,7 +154,7 @@ function CourseDetails() {
                 <RatingStars Review_Count={avgReviewCount} Star_Size={24} />
                 <span>{`(${ratingAndReviews?.length || 0} reviews)`}</span>
 
-                <span>{`${studentsEnrolled?.length ||0} students enrolled`}</span>
+                <span>{`${studentsEnroled?.length ||0} students enrolled`}</span>
               </div>
               <div>
                 <p className="">

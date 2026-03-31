@@ -4,7 +4,9 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "dev": "nodemon index.js"
+    "dev": "nodemon index.js",
+    "seed": "node scripts/seedDatabase.js",
+    "assign:nihkil": "node scripts/assignInstructorCatalog.js"
   },
   "keywords": [],
   "author": "",

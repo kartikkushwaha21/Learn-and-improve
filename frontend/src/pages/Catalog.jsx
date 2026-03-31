@@ -23,7 +23,10 @@ function Catalog() {
     ;(async () => {
       try {
         const res = await apiConnector("GET", categories.CATEGORIES_API)
-        const category_id = res?.data?.data?.filter(
+        const availableCategories = (res?.data?.data || []).filter(
+          (category) => category?.courses?.length > 0
+        )
+        const category_id = availableCategories.filter(
           (ct) => ct.name === catalogName
         )[0]._id
         setCategoryId(category_id)
